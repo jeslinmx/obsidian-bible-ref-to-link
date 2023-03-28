@@ -2,7 +2,7 @@
 	"id": "obsidian-bible-ref-to-link",
 	"name": "Bible Reference to Link",
 	"version": "0.0.1",
-	"minAppVersion": "0.15.0",
+	"minAppVersion": "1.1.16",
 	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
 	"author": "Jeshua Lin",
 	"authorUrl": "",
