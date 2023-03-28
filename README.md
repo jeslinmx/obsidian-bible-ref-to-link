@@ -1,96 +1,29 @@
-# Obsidian Sample Plugin
+# Bible References to Links
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Automatically convert bare Bible references to Obsidian links. This is meant to work in conjunction with a Bible (with structure similar to the [Bible Study Kit](https://forum.obsidian.md/t/bible-study-in-obsidian-kit-including-the-bible-in-markdown/12503)) already in your vault.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+## Disclaimer
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+This plugin is still in an early stage. I use it personally and extensively, but it is still relatively untested (especially outside of my own hands). Always keep backups of your vault, that's just good practice.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Usage
 
-## First time developing plugins?
+Use the `Detect and convert Bible references to links` command from the command palette, editor toolbar (on mobile), or keybinding of your choice to trigger this plugin's functionality. Any references detected in your active document (or selection, if any) into links.
 
-Quick starting guide for new plugin devs:
+Supported functionalities include abbreviated book names (e.g. Phm = Philemon, 1Co = 1 Corinthians), multiple verses from the same chapter (e.g. Php 4:4, 13) or book (e.g. Matthew 5:48; 6:33), verse ranges (Matthew 5:3-11, 14-16).
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+These links assume that you have each chapter stored as a different file with the full book name and chapter number (i.e. Genesis 1.md, Genesis 2.md, etc.), with each verse being a heading of any level in each file, consisting only of the verse number (i.e. `# 1` for verse 1, `# 2` for verse 2, etc.). On the input end, it is assumed that references are separated by commas or semicolons and chapters are denoted by colons, that is, `8:13, 14, 9:15` denotes "chapter 8 verses 13 and 14, chapter 9 verse 15). Customization of all these assumptions (symbols, heading format and structure, file naming and structure) may come in a later release.
 
-## Releasing new releases
+## Examples
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+| Before | After |
+| -- | -- |
+| Gen 1:1 | `[[Genesis 1#1|Gen 1:1]]` |
+| Gen 1:1-3 | `[[Genesis 1#1|Gen 1:1-3]][[Genesis 1#2|]][[Genesis 1#3|]]` |
+| Gen 1:1-3, 13, 14, 25-26 | `[[Genesis 1#1|Gen 1:1-3]][[Genesis 1#2|]][[Genesis 1#3|]], [[Genesis 1#13|13]], [[Genesis 1#14|14]], [[Genesis 1#25|25-26]][[Genesis 1#26|]]` |
+| Gen 1:1-3; 2:1-4, 7, 9; 3:5-6 | `[[Genesis 1#1|Gen 1:1-3]][[Genesis 1#2|]][[Genesis 1#3|]]; [[Genesis 2#1|2:1-4]][[Genesis 2#2|]][[Genesis 2#3|]][[Genesis 2#4|]], [[Genesis 2#7|7]], [[Genesis 2#9|9]]; [[Genesis 3#5|3:5-6]][[Genesis 3#6|]]` |
+| Gen 1:1-3; Exo 5:9; 6:7 | `[[Genesis 1#1|Gen 1:1-3]][[Genesis 1#2|]][[Genesis 1#3|]]; [[Exodus 5#9|Exo 5:9]]; [[Exodus 6#7|6:7]]` |
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## License
 
-## Adding your plugin to the community plugin list
-
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
-
-If you have multiple URLs, you can also do:
-
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
-
-## API Documentation
-
-See https://github.com/obsidianmd/obsidian-api
+MIT
