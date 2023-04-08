@@ -2,12 +2,14 @@ import { Editor, MarkdownView, Plugin } from 'obsidian';
 import { scanAndProcessTokens } from 'procref';
 
 function manipulateEditor(editor: Editor) {
+	const cursorPosition = editor.getCursor()
 	if (editor.somethingSelected()) {
 		editor.replaceSelection(scanAndProcessTokens(editor.getSelection()))
 	}
 	else {
 		editor.setValue(scanAndProcessTokens(editor.getValue()))
 	}
+	editor.setCursor(cursorPosition)
 }
 
 export default class BibleRefToLinkPlugin extends Plugin {
