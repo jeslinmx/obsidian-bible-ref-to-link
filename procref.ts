@@ -1,5 +1,5 @@
 import { bookAbbreviationMapping } from "books"
-import { anyOf, charIn, createRegExp, digit, maybe, oneOrMore, whitespace } from "magic-regexp"
+import { anyOf, char, charIn, createRegExp, digit, exactly, maybe, oneOrMore, whitespace } from "magic-regexp"
 
 interface MatchContext {
 	book: RegExpMatchArray | null
@@ -12,6 +12,7 @@ const ws = whitespace.times.any()
 const wrapws = (re: never) => ws.and(re).and(ws)
 const bookToken: RegExp = createRegExp(
 	maybe("!").as("embed").and(anyOf(...bookAbbreviationMapping.keys()).as("book")).and(ws)
+	.or(exactly("[[").and(char.times.any()).and("]]").as("link"))
 , ["i"])
 const chapterToken: RegExp = createRegExp(
 	oneOrMore(digit).as("chapter").and(wrapws(":"))
@@ -36,8 +37,8 @@ function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatc
 	const chapterToken = chapterMatch[0]
 	const verseToken = verseMatch[0]
 
-	const { book } = bookMatch.groups
-	const { chapter } = chapterMatch.groups
+	const book = bookMatch.groups?.book ?? ""
+	const chapter = chapterMatch.groups?.chapter ?? ""
 	const { verseStart, verseEnd } = verseMatch.groups
 	const canonicalBook = bookAbbreviationMapping.get(book.toLowerCase())
 	const verses = range(Number(verseStart), Number(verseEnd ?? verseStart))
@@ -64,8 +65,9 @@ export function scanAndProcessTokens(input: string) {
 	while (remaining) {
 		if (ctx.book === null) {
 			// STATE 1: no book, chapter or verse
-			// search for book, not necessarily from start of line
-			// if book not found, flush remaining and exit
+			// search for book or link, not necessarily from start of line
+			// if neither found, flush remaining and exit
+			// if link found, skip
 			// else, flush text up to book, assign to context, truncate remaining, and go to STATE 2
 			ctx.book = remaining.match(bookToken)
 			console.debug("STATE 1:\n", remaining, ctx.book)
@@ -73,9 +75,14 @@ export function scanAndProcessTokens(input: string) {
 				outputStack.push(remaining)
 				break
 			}
+			else if (ctx.book.groups && ctx.book.groups.link) {
+				outputStack.push(remaining.substring(0, (ctx.book.index ?? 0) + ctx.book[0].length))
+				remaining = remaining.substring((ctx.book.index ?? 0) + ctx.book[0].length)
+				ctx.book = null
+			}
 			else {
-				outputStack.push(remaining.substring(0, ctx.book?.index))
-				remaining = remaining.substring(ctx.book?.index + ctx.book[0].length)
+				outputStack.push(remaining.substring(0, (ctx.book.index ?? 0)))
+				remaining = remaining.substring((ctx.book.index ?? 0) + ctx.book[0].length)
 			}
 		}
 		else if (ctx.chapter === null) {
