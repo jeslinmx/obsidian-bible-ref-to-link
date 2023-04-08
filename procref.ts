@@ -11,7 +11,7 @@ interface MatchContext {
 const ws = whitespace.times.any()
 const wrapws = (re: never) => ws.and(re).and(ws)
 const bookToken: RegExp = createRegExp(
-	anyOf(...bookAbbreviationMapping.keys()).as("book").and(ws)
+	maybe("!").as("embed").and(anyOf(...bookAbbreviationMapping.keys()).as("book")).and(ws)
 , ["i"])
 const chapterToken: RegExp = createRegExp(
 	oneOrMore(digit).as("chapter").and(wrapws(":"))
@@ -31,7 +31,7 @@ function range(start: number, end: number): number[] {
 	return [...Array(end - start + 1).keys()].map(x => start + x)
 }
 
-function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatchArray, verseMatch: RegExpMatchArray): string {
+function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatchArray, verseMatch: RegExpMatchArray, embed = false): string {
 	const bookToken = bookMatch[0]
 	const chapterToken = chapterMatch[0]
 	const verseToken = verseMatch[0]
@@ -47,10 +47,10 @@ function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatc
 
 	return verses.map(
 		(verse: number, i: number) =>
-		`${verseAddress(verse)}|${i == 0 ? verseDisplayText : ""}`
-	)
-	.map(x => `[[${x}]]`)
-	.join("")
+		embed
+		? `![[${verseAddress(verse)}]]`
+		: `[[${verseAddress(verse)}|${(i == 0 || embed) ? verseDisplayText : ""}]]`
+	).join("")
 }
 
 export function scanAndProcessTokens(input: string) {
@@ -105,7 +105,7 @@ export function scanAndProcessTokens(input: string) {
 				ctx.book = ctx.chapter = null
 			}
 			else {
-				outputStack.push(constructLinkFrom(ctx.book, ctx.chapter, ctx.verse))
+				outputStack.push(constructLinkFrom(ctx.book, ctx.chapter, ctx.verse, Boolean(ctx.book.groups?.embed)))
 				remaining = remaining.substring(ctx.verse[0].length)
 			}
 		}
@@ -120,7 +120,7 @@ export function scanAndProcessTokens(input: string) {
 				ctx.book = ctx.chapter = ctx.verse = null
 			}
 			else {
-				outputStack.push(sep[0])
+				if (!ctx.book.groups?.embed) outputStack.push(sep[0])
 				remaining = remaining.substring(sep[0].length)
 				let lookahead: RegExpMatchArray | null
 				if ((lookahead = remaining.match(bookTokenImmediateVicinity))) {
