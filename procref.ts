@@ -49,7 +49,7 @@ function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatc
 	return verses.map(
 		(verse: number, i: number) =>
 		embed
-		? `![[${verseAddress(verse)}]]`
+		? `![[${verseAddress(verse)}]]\n`
 		: `[[${verseAddress(verse)}|${(i == 0 || embed) ? verseDisplayText : ""}]]`
 	).join("")
 }
