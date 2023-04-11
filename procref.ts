@@ -9,22 +9,21 @@ interface MatchContext {
 
 // Regexps
 const ws = whitespace.times.any()
-const wrapws = (re: never) => ws.and(re).and(ws)
 const bookToken: RegExp = createRegExp(
 	maybe("!").as("embed").and(anyOf(...bookAbbreviationMapping.keys()).as("book")).and(ws)
 	.or(exactly("[[").and(char.times.any()).and("]]").as("link"))
 , ["i"])
 const chapterToken: RegExp = createRegExp(
-	oneOrMore(digit).as("chapter").and(wrapws(":"))
+	oneOrMore(digit).as("chapter").and(ws.and(":").and(ws))
 	.at.lineStart()
 )
 const verseToken: RegExp = createRegExp(
 	(oneOrMore(digit).as("verseStart"))
-	.and(maybe(wrapws("-").and(oneOrMore(digit).as("verseEnd"))))
+	.and(maybe(ws.and("-").and(ws).and(oneOrMore(digit).as("verseEnd"))))
 	.at.lineStart()
 )
 const separator: RegExp = createRegExp(
-	wrapws(charIn(",;")).at.lineStart()
+	ws.and(charIn(",;")).and(ws).at.lineStart()
 )
 const bookTokenImmediateVicinity = new RegExp("^" + bookToken.source, bookToken.flags)
 
@@ -38,8 +37,9 @@ function constructLinkFrom(bookMatch: RegExpMatchArray, chapterMatch: RegExpMatc
 	const verseToken = verseMatch[0]
 
 	const book = bookMatch.groups?.book ?? ""
-	const chapter = chapterMatch.groups?.chapter ?? ""
-	const { verseStart, verseEnd } = verseMatch.groups
+	const chapter = chapterMatch.groups?.chapter
+	const verseStart = verseMatch.groups?.verseStart
+	const verseEnd = verseMatch.groups?.verseEnd
 	const canonicalBook = bookAbbreviationMapping.get(book.toLowerCase())
 	const verses = range(Number(verseStart), Number(verseEnd ?? verseStart))
 
